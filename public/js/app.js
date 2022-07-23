@@ -49609,9 +49609,9 @@ __webpack_require__.r(__webpack_exports__);
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-__webpack_require__(/*! C:\jaqen\esercizi_boolean\07-Laravel\G-Boolpress-2\laravel-one-to-many\resources\js\app.js */"./resources/js/app.js");
-__webpack_require__(/*! C:\jaqen\esercizi_boolean\07-Laravel\G-Boolpress-2\laravel-one-to-many\resources\sass\app.scss */"./resources/sass/app.scss");
-module.exports = __webpack_require__(/*! C:\jaqen\esercizi_boolean\07-Laravel\G-Boolpress-2\laravel-one-to-many\resources\sass\front.scss */"./resources/sass/front.scss");
+__webpack_require__(/*! C:\jaqen\esercizi_boolean\07-Laravel\H-Boolpress-3\laravel-many-to-many\resources\js\app.js */"./resources/js/app.js");
+__webpack_require__(/*! C:\jaqen\esercizi_boolean\07-Laravel\H-Boolpress-3\laravel-many-to-many\resources\sass\app.scss */"./resources/sass/app.scss");
+module.exports = __webpack_require__(/*! C:\jaqen\esercizi_boolean\07-Laravel\H-Boolpress-3\laravel-many-to-many\resources\sass\front.scss */"./resources/sass/front.scss");
 
 
 /***/ })

@@ -1,6 +1,6 @@
 // --- CLONARE UNA REPOSITORY --- \\
 
-1. scarico zip di laravel-auth-master, estraggo, rinomino in nuovo-nome-repo, apro in VS Code e pubblico la nuova repository
+1. scarico zip della repo che voglio clonare, estraggo, rinomino in nuovo-nome-repo, apro in VS Code e pubblico la nuova repository
 
 2. installo le dipendenze vendor e node_modules (una alla volta) (vengono ignorate da git, di conseguenza non le trovo nel master della repo da clonare. Bisogna reinstallarli):
     composer install (vendor)
