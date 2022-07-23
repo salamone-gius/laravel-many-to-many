@@ -1,0 +1,22 @@
+// --- CLONARE UNA REPOSITORY --- \\
+
+1. scarico zip di laravel-auth-master, estraggo, rinomino in nuovo-nome-repo, apro in VS Code e pubblico la nuova repository
+
+2. installo le dipendenze vendor e node_modules (una alla volta) (vengono ignorate da git, di conseguenza non le trovo nel master della repo da clonare. Bisogna reinstallarli):
+    composer install (vendor)
+    npm install (node_modules)
+    npm run dev
+
+3. copio il file .env.example in .env e collego il DB 'laravel_auth'
+
+4. lancio il comando per generare/rigenerare la APP_KEY nel file .env (variabile contenente una stringa casuale di 32 caratteri utilizzata per criptare/decriptare i cookies, inclusi i cockies di sessione):
+    php artisan key:generate
+
+5. lancio il comando per aggiornare la cache del file .env:
+    php artisan config:clear
+
+6. lancio il comando che compilerà la parte di asset:
+    npm run watch
+
+7. lancio il comando che avvia il server locale per lo sviluppo:
+    php artisan serve

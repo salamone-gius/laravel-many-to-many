@@ -1,0 +1,169 @@
+// --- CRUD --- \\
+
+1. creo il db direttamente con phpMyAdmin
+
+2. creo la tabella dentro al db:
+    php artisan make:migration create_nome_tabella_table
+
+3. in database > migrations > data_odierna_create_nome_tabella_table.php inizializzo le colonne della tabella e indico il tipo di dato con cui le andrò a popolare
+
+4. creo a db la tabella e le colonne appena inizializzate:
+    php artisan migrate
+
+5. creo il model che sarà il modello della tabella che farà da tramite tra laravel e la tabella a db
+    php artisan make:model NomeTabellaSingolare
+
+6. creo il controller che farà da tramite tra il model e una view direttamente con namespace 'Admin' e già scaffoldato (!?) per le operazioni di CRUD (con --resource)
+    php artisan make:controller Admin/NomeTabellaSingolareController --resource
+
+7. in routes > web.php, all'interno del middleware Auth namespace Admin, creo la rotta per arrivare ai metodi del nuovo controller
+
+8. verifico se effettivamente sono state create tutte le rotte per le operazioni di CRUD:
+    php artisan route:list
+
+9. posso cominciare a creare tutte le operazioni di CRUD
+
+// --- CREATE (sezioni create() e store() del controller) --- \\
+
+1. in resources > view > admin creo la cartella che conterrà tutte le pagine blade relative alla CRUD della nuova tabella
+
+2. in resources > view > admin > nome_tabella creo la pagina create.blade
+
+3. in app > Http > Controllers > Admin > NomeTabellaSingolareController.php, all'interno del metodo create(), restituisco la view della nuova create.blade
+
+4. in resources > view > admin > nome_tabella > create.blade.php creo la sezione relativa alla CREAZIONE (da parte dell'utente) di un nuovo elemento nella tabella:
+
+    - estendo il layout di app.blade (@extends) e creo una @section('content') dove inserirò il contenuto;
+
+    - creo il form per la creazione di un nuovo post:
+
+        - nell'attributo action del tag form definisco la rotta che punta allo store per immagazzinare gli elementi del nuovo post (al submit creerà una nuova riga della tabella):
+            <form action="{{route('admin.nome_tabella.store')}}">;
+
+        - nell'attributo method del tag form definisco il metodo POST:
+            <form action="{{route('admin.nome_tabella.store')}}" method="POST">;
+
+        - aggiungo il token di validazione di laravel @csrf:
+            <form action="{{route('admin.nome_tabella.store')}}" method="POST">
+                @csrf
+
+        - aggiungo/modifico un tag input per ogni elemento (colonna) della tabella:
+            - imposto l'attributo type del tag input;
+            - l'attributo for del tag label deve matchare con l'attributo id del tag input;
+            - l'attributo name (importantissimo) deve matchare con il nome della colonna che dovrà andare a riempire.
+
+        - verifico se i dati inseriti dall'utente nel form mi arrivano correttamente:
+            nel controller, all'interno del metodo store():
+                dd($request->all()).
+
+5. in app > Http > Controllers > Admin > NomeTabellaSingolareController.php,  importo il model relativo. Al metodo store() arrivano i dati submittati dal form (Request $request). Con questi dati dovrò fare principalmente 3 cose:
+
+    5.1 VALIDAZIONE: all'interno del metodo validate() applicato alla $request, scrivo tutte le caratterische che i dati in ingresso devono avere, colonna per colonna (doc: validation rules);
+
+    5.2 CREAZIONE DEL NUOVO ELEMENTO:
+        - passo tutti i dati in arrivo dal form ($request) dentro la variabile $data;
+        - istanzio il modello per la creazione del nuovo elemento;
+        - imposto con quali dati in arrivo andrò a riempire quali colonne;
+        - salvo i dati a db in maniera permanente con il metodo save() applicato al nuovo elemento.
+
+    5.3 REINDIRIZZAMENTO: restituisco il reindirizzamento alla rotta che voglio visualizzare dopo il submit.
+
+// --- READ (sezioni index() e show() del controller) --- \\
+
+1. in resources > view > admin > nome_tabella creo la pagina index.blade che mi restituirà l'elenco degli elementi della tabella:
+
+    - estendo il layout di app.blade (@extends) e creo una @section('content') dove inserirò il contenuto;
+
+    - ciclando l'array passatomi dal controller, inserisco tutti i dati.
+
+2. in app > Http > Controllers > Admin > NomeTabellaSingolareController.php, all'interno del metodo index(), passo tutti gli elementi della tabella relativa e restituisco la view della nuova index.blade
+
+3. aggiungo i link con le rotte alle pagine blade appena create alle pagine esistenti
+
+4. in resources > view > admin > nome_tabella creo la pagina show.blade che mi restituirà il singolo elemento della tabella:
+
+    - estendo il layout di app.blade (@extends) e creo una @section('content') dove inserirò il contenuto;
+
+    - usando gli elementi passatimi dal controller, inserisco tutti i dati.
+
+5. in app > Http > Controllers > Admin > NomeTabellaSingolareController.php:
+
+    - passo il singolo elemento della tabella come argomento del metodo show() (dependancy injection);
+    
+    - restituisco la view della nuova show.blade e la versione compatta del singolo elemento
+
+6. aggiungo i link con le rotte alle pagine blade appena create alle pagine esistenti
+
+// --- UPDATE (sezioni edit() e update() del controller) --- \\
+
+1. in resources > view > admin > nome_tabella creo la pagina edit.blade che mi restituirà la pagina di modifica degli elementi della tabella:
+
+    - estendo il layout di app.blade (@extends) e creo una @section('content') dove inserirò il contenuto (che sarà praticamente identico a create.blade):
+
+        - aggiungo un secondo paramentro al metodo old() in tutti gli input che mi fa comparire i campi più recenti (risalenti all'ultima modifica);
+
+        - nell'attributo action del tag form definisco la rotta che punta all'update per modificare i singoli elementi della tabella (al submit cambierà i valori in tabella) passandogli l'id del singolo elemento che sarà modificato:
+            <form action="{{route('admin.nome_tabella.update', $elemento->id)}}">;
+
+        - nell'attributo method del tag form lascio il metodo POST:
+            <form action="{{route('admin.nome_tabella.update', $elemento->id)}}" method="POST">;
+
+        - lascio il token di validazione di laravel @csrf:
+            <form action="{{route('admin.nome_tabella.update', $elemento->id)}}" method="POST">
+                @csrf;
+
+        - aggiungo il metodo PUT attraverso il metodo @method:
+            <form action="{{route('admin.nome_tabella.update', $elemento->id)}}" method="POST">
+                @csrf
+                @method('PUT')
+
+        - usando gli elementi passatimi dal controller, inserisco tutti i dati;
+ 
+2. in app > Http > Controllers > Admin > NomeTabellaSingolareController.php:
+
+    - passo il singolo elemento della tabella attraverso il suo model come argomento del metodo edit() (dependancy injection);
+    
+    - restituisco la view della nuova edit.blade e la versione compatta del singolo elemento
+
+3. in app > Http > Controllers > Admin > NomeTabellaSingolareController.php:
+
+    - importo il model relativo;
+    
+    - il metodo update() sarà SIMILE al metodo store(). Oltre ai dati submittati nel form (Request $request (di default)), passo al metodo update() come argomento anche il model e il singolo elemento (dependency injection). Con questi dati dovrò fare principalmente 3 cose:
+
+        3.1 VALIDAZIONE: all'interno del metodo validate() applicato alla $request, scrivo tutte le caratterische che i dati in ingresso devono avere, colonna per colonna (doc: validation rules);
+
+        3.2 AGGIORNAMENTO DEL SINGOLO ELEMENTO:
+            - passo tutti i dati in arrivo dal form ($request) dentro la variabile $data;
+            - imposto le colonne ed i relativi dati in arrivo con cui le andrò a riempire;
+            - salvo i dati a db in maniera permanente con il metodo save() applicato al singolo elemento che deve essere modificato.
+
+        3.3 REINDIRIZZAMENTO: restituisco il reindirizzamento alla rotta che voglio visualizzare dopo la modifica del singolo elemento.
+
+// --- DELETE (sezione destroy() del controller) --- \\
+
+1. il link che mi consentirà di cancellare un elemento (in index.blade) dovrà essere dentro un form poiché serve il metodo http POST e il metodo lavarel DELETE:
+
+    - nell'attributo action del tag form definisco la rotta che punta al destroy per eliminare i singoli elementi della tabella (al submit l'elemento verrà eliminato dalla tabella) passandogli l'id del singolo elemento che sarà cancellato:
+        <form action="{{route('admin.nome_tabella.destroy', $elemento->id)}}">;
+
+    - nell'attributo method del tag form aggiungo il metodo http POST:
+        <form action="{{route('admin.nome_tabella.destroy', $elemento->id)}}" method="POST">;
+
+    - aggiungo il token di validazione di laravel @csrf:
+        <form action="{{route('admin.nome_tabella.destroy', $elemento->id)}}" method="POST">
+            @csrf;
+
+    - aggiungo il metodo DELETE attraverso il metodo @method:
+        <form action="{{route('admin.nome_tabella.destroy', $elemento->id)}}" method="POST">
+            @csrf
+            @method('DELETE')
+
+2. in app > Http > Controllers > Admin > NomeTabellaSingolareController.php:
+
+    - passo il model e il singolo elemento come argomento del metodo destroy() (dependancy injection);
+
+    - cancello il singolo elemento attraverso il metodo delete();
+
+    - reindirizzo all'index.blade aggiornato.
+

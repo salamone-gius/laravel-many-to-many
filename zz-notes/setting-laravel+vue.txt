@@ -1,0 +1,366 @@
+// --- NUOVO PROGETTO LARAVEL + VUE --- \\
+
+
+1. avvio nuovo progetto laravel (con cartella repo vuota aperta su vs code):
+    composer create-project --prefer-dist laravel/laravel:^7.0 .
+
+2. creo il db vuoto con phpmyadmin (laravel_auth)
+
+3. installo nel progetto la laravel/ui (parte frontend) che fornisce lo scaffolding Bootstrap e Vue fornito da Laravel:
+    composer require laravel/ui:^2.4
+
+4. installato il pacchetto laravel/ui, installo lo scaffolding frontend usando il comando Artisan ui:
+    php artisan ui vue --auth (--auth crea già una struttura per l'autenticazione)
+
+5. installo la node module per compilare gli asset:
+    npm install
+    npm run dev
+
+6. mi aggancio al db dal .env. Ogni volta che si cambia qualcosa in questo file bisogna pulire la cache di configurazione:
+    php artisan config:clear
+
+7. faccio la migration per creare le tabelle a db:
+    php artisan migrate
+
+8. lancio il server per lo sviluppo:
+    php artisan serve
+
+9. verifico che tutto sia andato a buon fine:
+    localhost:8000 -> welcome di laravel + login - register
+    se provo a registrarmi vengo reindirizzato su http://localhost:8000/home dove mi compare la dashboard con il messaggio: "You are logged in!"
+
+10. pulisco e organizzo il codice per dividere bene frontoffice da backoffice:
+
+    - creo un controller uguale a quello che mi ha creato laravel al punto 4 (HomeController) ma sotto namespace Admin per separare la parte admin (autenticato) e la parte pubblica:
+        php artisan make:controller Admin/HomeController
+
+    - copio tutta la classe di HomeController, la incollo nell'HomeController appena creato (namespace: Admin) e cancello l'originale
+
+    - cancello il costruttore all'interno della classe HomeController in modo da gestire il middleware con le rotte
+
+    - definisco tutte le rotte del backoffice nel web.php:
+
+        // definisco dentro un gruppo tutte le rotte che voglio proteggere con l'autenticazione:
+
+        // tutte le rotte avranno lo stesso middleware ('auth');
+        Route::middleware('auth')
+
+            // tutte le rotte avranno lo stesso namespace (i controller saranno dentro la sottocartella 'Admin');
+            ->namespace('Admin')
+
+            // i nomi di tutte le rotte inizieranno con 'admin.';
+            ->name('admin.')
+
+            // tutte le rotte avranno lo stesso prefisso url '/admin/';
+            ->prefix('admin')
+
+            // inserisco tutte le rotte che devono essere protette da autenticazione (backoffice)
+            ->group(function () {
+
+                // /home/admin/
+                Route::get('/home', 'HomeController@index')->name('home');
+
+            });
+
+    - lancio il comando per verificare le rotte:
+        php artisan route:list
+
+    - avendo spostato la uri da /home a /admin/home, devo andare a configurare laravel in modo che reindirizzi alla pagina corretta:
+
+        in app > Providers > RouteServiceProvider.php:
+
+            // modifico la const HOM£ da '/home' a '/admin/home'
+            public const HOME = '/admin/home';
+
+    - adesso la dashboard con il messaggio: "You are logged in!" ha come url http://localhost:8000/admin/home
+
+    - in resources > views > welcome.blade modifico il link per far si che reindirizzi alla rotta '/admin/home'
+
+        {{-- cambiando url() in route() possiamo dargli il nome della rotta --}}
+        <a href="{{ route('admin.home') }}">Home</a>
+
+    - organizzo parti frontend e parti backend anche a livello di cartelle (views e asset):
+
+        - in resources > views creo le cartelle 'guest' e 'admin'
+
+        - sposto 'home.blade' nella cartella 'admin' e modifico il percorso nell'HomeController ('admin.home')
+
+        - creo un'altra pagina home.blade dentro 'guest' che conterrà l'applicativo in Vue.js che gestirà la parte frontend
+
+        - in web.php definisco una rotta di fallback che reindirizzerà tutte le rotte che non fanno parte del backoffice al file dove Vue.js gestisce il frontoffice:
+
+            // sotto tutte le altre rotte, ne definisco una di fallback che reindirizza tutte le rotte che non fanno parte dal backoffice alla pagina Vue.js che gestirà il frontoffice 
+            Route::any('{any?}', function() {
+                return view('guest.home');
+            })->where('any', '.*');
+
+    - a questo punto bisogna iniziare a creare lo scaffolding di Vue.js per separare javscript e stile frontoffice da backoffice:
+
+        - in resources > sass creo un file 'front.scss';
+
+        - in resources > js creo una cartella 'views' al cui interno definisco il componente 'App.vue':
+
+            <template>
+                <h1>Vue.js</h1>
+            </template>
+
+            <script>
+            export default {
+                name: 'App',
+            }
+            </script>
+
+            <style>
+
+            </style>
+
+        - in resources > js creo un file 'front.js':
+
+            // includo la libreria Vue.js
+            window.Vue = require('vue');
+
+            // importo il componente principale della nostra applicazione 'App.vue'
+            import App from './views/App.vue';
+
+            // renderizzo App all'avvio
+            const app = new Vue({
+                el: '#app',
+                render: h => h(App),
+            });
+
+        - in webpack.mix.js aggiungo le direttive per la compilazione di javascript e scss:
+
+            // creo le direttive per compilare scss e js
+            mix.js('resources/js/app.js', 'public/js')
+                .js('resources/js/front.js', 'public/js')
+                .sass('resources/sass/app.scss', 'public/css')
+                .sass('resources/sass/front.scss', 'public/css');
+
+        - in resources > views > guest > home.blade linko i file js e css appena creati:
+
+            <link rel="stylesheet" href="{{asset('css/front.css')}}">
+            <script src="{{asset('js/front.js')}}"></script>
+
+        - resetto npm run watch (stacco e rilancio)
+
+
+
+// ------------- CRUD ------------- \\
+
+
+
+11. creo la tabella 'posts' dentro al db:
+    php artisan make:migration create_posts_table
+
+12. in database > migrations > data_odierna_create_posts_table.php inizializzo le colonne della tabella e indico il tipo di dato con cui le andrò a popolare
+
+13. creo a db la tabella e le colonne appena inizializzate:
+    php artisan migrate
+
+14. creo il model che sarà il modello della tabella che farà da tramite tra laravel e la tabella a db
+    php artisan make:model Post
+
+15. creo il controller che farà da tramite tra il model e una view direttamente con namespace 'Admin' e già scaffoldato (!?) per le operazioni di CRUD (con --resource)
+    php artisan make:controller Admin/PostController --resource
+
+16. creo le rotte per arrivare ai metodi del PostController
+
+17. in resources > views > admin creo la cartella 'posts' dove inserirò ogni singola risorsa
+
+18. in resources > views > admin > posts creo la view create.blade.php e la vado ad inserire all'interno del metodo view() del return del metodo create() del PostController (che al mercato mio padre comprò)
+
+19. in resources > views > layouts laravel crea il layout mezzo predisposto 'app.blade.php' con uno @yield('content') nel main
+
+20. nel create.blade estendo il layout di app.blade (@extends) e creo una @section('content') dove inserirò i contenuti
+
+21. nel card-body del create.blade aggiungo il form per la creazione di un nuovo post:
+
+    - nell'attributo action del tag form definisco la rotta che punta allo store per immagazzinare gli elementi del nuovo post (al submit creerà una nuova riga della tabella):
+        <form action="{{route('admin.posts.index')}}">;
+
+    - nell'attributo method del tag form definisco il metodo POST:
+        <form action="{{route('admin.posts.index')}}" method="POST">;
+
+    - aggiungo il token di validazione di laravel @csrf:
+        <form action="{{route('admin.posts.index')}}" method="POST">
+            @csrf
+
+    - aggiungo/modifico un tag input per ogni elemento (colonna) della tabella:
+        - imposto l'attributo type del tag input;
+        - l'attributo for del tag label deve matchare con l'attributo id del tag input;
+        - l'attributo name (importantissimo) deve matchare con il nome della colonna che dovrà andare a riempire.
+
+    - verifico se i dati inseriti dall'utente nel form mi arrivano correttamente:
+        nel PostController, all'interno del metodo store():
+            dd($request->all());
+
+22.  nel metodo store() nel PostController imposto la logica relativa all'immagazzinamento a db dei dati arrivati dal form:
+
+    public function store(Request $request)
+    {
+        // valido i dati che arrivano dal form del create
+        $request->validate([
+            // passo al metodo validate() un array associativo in cui la chiave sarà il dato che devo controllare e come valore le caratteristiche che quel dato deve avere per poter "passare" la validazione (vedi doc: validation)
+            'title' => 'required|string|max:255',
+            'content' => 'required|string|max:65535',
+            'published' => 'sometimes|accepted',
+        ]);
+
+        // prendo i dati dalla request
+        $data = $request->all();
+
+        // istanzio il nuovo post
+        $newPost = new Post();
+
+        // lo fillo attraverso il mass assignment che avrò già abilitato nel model Post
+        $newPost->fill($data);
+
+        // non avendolo previsto nel form, ma dovendolo avere come dato in tabella, devo generare qui uno slug univoco partendo dal title (ce lo genera laravel da una stringa)
+        $slug = Str::of($newPost->title)->slug('-');
+
+        // imposto un contatore per il controllo sullo slug
+        $count = 1;
+
+        // controllo sull'unicità dello slug 
+        while (Post::where('slug', $slug)->first()) {
+            $slug = Str::of($newPost->title)->slug('-') . "-{$count}";
+            $count++;
+        }
+
+        // assegno lo slug appena creato dal title al campo slug del newPost
+        $newPost->slug = $slug;
+
+        // devo settare la checkbox in modo che restituisca un valore booleano (di default la checkbox restituisce "on" se è checkata e lo devo trasformare in "true")
+        // il metodo isset() restituisce true o false. In questo caso "se esiste" restituisce true, altrimenti false
+        $newPost->published = isset($data['published']);
+
+        // salvo i dati a db
+        $newPost->save();
+
+        // reindirizzo alla rotta che mi restituisce la view del post appena creato 
+        return redirect()->route('admin.posts.show', $newPost->id);
+    }
+
+23. inserisco il controllo dello slug in un metodo privato in modo da poterne richiamare la logica in altri punti del controller
+
+24. al form nel create.blade aggiungo la visualizzazione di messaggi di errore nel caso in cui i dati inseriti dall'utente non passino la validazione appena settata (vedi doc: displaying the validation errors):
+
+    - aggiungo ad ogni attributo class di ogni campo input un if (@error - @enderror) in cui, se quel dato che l'utente ha inserito non passa la validazione, aggiunge la classe di Bootstrap 'is-invalid' che evidenzia di rosso tutto il campo input;
+
+    - aggiungo, subito sotto al campo input, un div (sempre tra @error - @enderror) che, se quel dato che l'utente ha inserito non passa la validazione, mostra un messaggio di errore evidenziato in rosso sotto il campo input:
+
+    esempio:    <label for="title">Title</label>
+                <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title">
+                @error('title')
+                    <div class="alert alert-danger">{{$message}}</div>
+                @enderror
+
+25. al form nel create.blade aggiungo, ad ogni attributo value di ogni campo input, ( value="{{old('nomeCampoInput')}}" ) il metodo old() che, nel caso in cui i dati inseriti dall'utente non passino la validazione, restituisce il dato (corretto) con cui era stato precedentemente popolato. Nella textarea si mette all'interno (non ha attributo value), per la checkbox bisogna fare un controllo ( {{old('nomeCampoInput') ? 'checked' : ''}} )
+
+26. terminata la parte Create, passo alla parte Read:
+
+    - in resources > views > admin > posts creo la pagina index.blade;
+
+    - in PostController dentro il metodo index() setto il return della view della pagina blade appena creata passandogli tutti i post;
+
+    - in index.blade creo una tabella che conterrà l'elenco di tutti i post, i dettagli di ogni post e le azioni per ogni singolo post.
+
+27. completo la parte Read settando la parte show (fa sempre parte della Read) (visualizzazione del singolo post):
+
+    - in resources > views > admin > posts creo la pagina show.blade;
+
+    - in PostController dentro il metodo show() setto il return della view della pagina blade appena creata passandogli direttamente il model e il singolo post come argomento (dependancy injection);
+
+    - in show.blade creo una card che conterrà il singolo post e un bottone per tornare all'elenco dei post;
+
+    - aggiungo qualche link/bottone per la navigazione.
+
+28. completata la parte Read, passo alla parte Update (come la Create è divisa in due parti: form (edit) e azione sul db (update)):
+
+    - in resources > views > admin > posts creo la pagina edit.blade;
+
+    - in PostController dentro il metodo edit() setto il return della view della pagina blade che contiene il post da modificare passandogli direttamente il model e il singolo post (da modificare) come argomento (dependancy injection);
+
+    - in PostController dentro il metodo update() imposto la logica per l'aggiornamento del db:
+
+        // oltre a passare (di default) i dati che arrivano dal form ($request) passo il model e il singolo $post come argomento del metodo update (dependancy injection)
+        public function update(Request $request, Post $post)
+        {
+            // valido i dati che arrivano dal form dell'edit
+            $request->validate([
+                // passo al metodo validate() un array associativo in cui la chiave sarà il dato che devo controllare e come valore le caratteristiche che quel dato deve avere per poter "passare" la validazione (vedi doc: validation)
+                'title' => 'required|string|max:255',
+                'content' => 'required|string|max:65535',
+                'published' => 'sometimes|accepted',
+            ]);
+
+            // prendo i dati dalla request
+            $data = $request->all();
+
+            // gestisco lo slug nel caso cambiasse il titolo
+            // SE il titolo del post è diverso da quello che mi arriva dalla request...
+            if ($post->title != $data['title']) {
+                // ...imposto il nuovo slug partendo dal nuovo titolo
+                $post->slug = $this->getSlug($data['title']);
+            }
+
+            // faccio il fill() della $request
+            $post->fill($data);
+
+            // devo settare la checkbox in modo che restituisca un valore booleano (di default la checkbox restituisce "on" se è checkata e lo devo trasformare in "true")
+            // il metodo isset() restituisce true o false. In questo caso "se esiste" restituisce true, altrimenti false
+            $post->published = isset($data['published']);
+
+            // salvo le modifiche al post a db
+            $post->save();
+
+            // salvo le modifiche al post a db passandogli quello che mi arriva dal form
+            // $post->update($data);
+            // in questo caso specifico non posso usare il metodo update perchè mi va in conflitto con la logica che gestisce lo slug
+
+            // reindirizzo alla rotta che mi restituisce la view del post appena modificato passandolgi l'id del post
+            return redirect()->route('admin.posts.show', $post->id);
+        }
+
+    - in edit.blade copio/incollo il form di create.blade, facendo qualche variazione:
+
+        - aggiungo un secondo paramentro al metodo old() in tutti gli input che mi fa comparire i campi più recenti (risalenti all'ultima modifica);
+
+        - nell'attributo action del tag form definisco la rotta che punta all'update per modificare gli elementi del post (al submit cambierà i valori in tabella) passandogli l'id del post che sarà modificato:
+            <form action="{{route('admin.posts.update', $post->id)}}">;
+
+        - nell'attributo method del tag form lascio il metodo POST:
+            <form action="{{route('admin.posts.update')}}" method="POST">;
+
+        - lascio il token di validazione di laravel @csrf:
+            <form action="{{route('admin.posts.update')}}" method="POST">
+                @csrf;
+
+        - aggiungo il metodo PUT attraverso il metodo @method:
+            <form action="{{route('admin.posts.update')}}" method="POST">
+                @csrf
+                @method('PUT')
+
+    - aggiungo qualche link/bottone per la navigazione.
+
+29. terminata la parte Update, passo alla parte Delete:
+
+    - il link che mi consentirà di cancellare un post (in index.blade) dovrà essere dentro un form poiché mi serve il metodo:
+
+        <form action="{{route('admin.posts.destroy', $post->id)}}" method="POST">
+            @csrf
+            @method('DELETE')
+            <button type="submit" href="{{route('admin.posts.edit', $post->id)}}" class="btn btn-danger">Delete post</button>
+        </form>
+
+    - in PostController dentro il metodo destroy() imposto la logica per cancellare il post:
+
+        // passo il model e il singolo $post come argomento del metodo update (dependancy injection)
+        public function destroy(Post $post)
+        {
+            // cancello il post selezionato
+            $post->delete();
+
+            // reindirizzo all'index aggiornato
+            return redirect()->route('admin.posts.index');
+        }
