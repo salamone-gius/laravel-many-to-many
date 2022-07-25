@@ -102,3 +102,15 @@
 
 4. lancio la migration che creerà la tabella pivot appena impostata:
     php artisan migrate
+
+5. informo Laravel della relazione tra le due tabelle mappando la relazione attraverso i loro Model. La tabella pivot non ha bisogno di Model, ma lo sottintendiamo attraverso dei metodi all'interno dei Model delle tabella implicate. Nelle relazioni many to many, non essendoci una tabella primaria e una secondaria, per indicare la relazione a livello di Model userò il metodo belongsToMany() in entrambe le direzioni (uguale in tutti e due i Model):
+
+	class NomeTabellaSingolare extends Model {
+
+		public function nomeTabellaDaRelazionarePlurale() {
+
+			return $this->belongsToMany('App\ModelTabellaDaRelazionareSingolare');
+		}
+	}
+
+

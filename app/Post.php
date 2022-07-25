@@ -12,7 +12,14 @@ class Post extends Model
     // creo un metodo pubblico che si chiama come la tabella principale (al singolare in caso di relazione uno a molti)
     public function category() {
 
-        // traduzione: restituisci $questoModel(un singolo post)->appartine a('il Model legato') (una categoria)
+        // traduzione: restituisci $questoModel(un singolo post)->appartiene a('il Model legato') (una categoria)
         return $this->belongsTo('App\Category');
+    }
+
+    // creo un metodo pubblico che si chiama come la tabella collegata (al plurale in caso di relazione molti a molti)
+    public function tags() {
+
+        // traduzione: restituisci $questoModel(un singolo post)->appartiene (è legato) a('il Model legato') (più tag)
+        return $this->belongsToMany('App\Tag');
     }
 }
