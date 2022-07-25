@@ -12,7 +12,10 @@
 3. lancio la migration appena impostata che creerà la tabella a db:
     php artisan migrate
 
-4. una volta individuata la tabella principale e quella secondaria, creo la relazione tra le tabelle a livello di db:
+
+// ---------- RELAZIONE ONE TO MANY ---------- \\
+
+1. una volta individuata la tabella principale e quella secondaria, creo la relazione tra le tabelle a livello di db:
 
     - creo la migration che aggiungerà una nuova colonna (la foreign key è legata alla primary key della tabella principale) alla tabella DIPENDENTE o SECONDARIA ('posts'):
         php artisan make:migration add_column_nome_nuova_colonna_nome_tabella_table --table=nome_tabella
@@ -26,16 +29,16 @@
     - lancio la migration appena impostata che aggiungerà la nuova colonna alla tabella SECONDARIA e la relativa RELAZIONE con la tabella PRINCIPALE:
         php artisan migrate
 
-5. creo il model della nuova tabella ('categories'):
+2. creo il model della nuova tabella ('categories'):
     php artisan make:model NomeTabellaAlSingolare
 
-6. informo Laravel della relazione tra le due tabelle attraverso i model relativi (Post e Category):
+3. informo Laravel della relazione tra le due tabelle attraverso i model relativi (Post e Category):
 
     - nel model della tabella principale (o indipendente) specifico il tipo di relazione attraverso la creazione di un metodo pubblico che si chiamerà come la tabella secondaria (o dipendente) a cui si andrà a legare. Il metodo restituisce il tipo di relazione (in questo caso relazione uno a molti) attraverso il metodo hasMany('Namespace\ModelloTabellaSecondaria'). Si deve tradurre: "una categoria ha molti posts";
 
     - nel model della tabella dipendente (o secondaria) specifico il tipo di relazione attraverso la creazione di un metodo pubblico che si chiamerà come la tabella principale (o indipendente) a cui si andrà a legare. Il metodo restituisce il tipo di relazione (in questo caso relazione uno a molti) attraverso il metodo belongsTo('Namespace\ModelloTabellaPrincipale'). Si deve tradurre: "un singolo post appartiene ad una sola categoria".
 
-7. popolo la nuova tabella attraverso un seeder:
+4. popolo la nuova tabella attraverso un seeder:
 
     - creo il seeder:
         php artisan make:seeder NomeTabellaTableSeeder;
@@ -47,7 +50,7 @@
     - lancio il seeder:
         php artisan db:seed.
 
-8. aggiungo una select al create.blade dove permetterò all'utente di aggiungere una categoria al nuovo post:
+5. aggiungo una select al create.blade dove permetterò all'utente di aggiungere una categoria al nuovo post:
 
     - in app > Http > Controllers > Admin > PostController:
 
@@ -63,7 +66,7 @@
 
     - aggiungo la gestione degli old all'interno del tag option.
 
-9. aggiungo la possibilità di modificare la categoria di un post in fase di editing:
+6. aggiungo la possibilità di modificare la categoria di un post in fase di editing:
 
     - in app > Http > Controllers > Admin > PostController nel metodo edit():
 
@@ -74,3 +77,12 @@
     - in edit.blade copio/incollo il form relativo all'assegnazione della categoria della create.blade modificando l'old.
 
     - in app > Http > Controllers > Admin > PostController nel metodo update() aggiungo la relativa validazione prima del processo di salvataggio del dato a db.
+
+
+// ---------- RELAZIONE MANY TO MANY ---------- \\
+
+1. nelle relazioni many to many le tabelle comunicano tra di loro attraverso una tabella pivot intermedia che conterrà le chiavi primarie (id dei record delle due tabelle) di entrambe le tabelle implicate e le userà per creare una relazione tra ogni elemento di una tabella e ogni altro elemento di un'altra tabella
+
+2. creo una migration per impostare la creazione della tabella pivot che prenderà le chiavi primarie (id dei record) di entrambe le tabelle da relazionare:
+	php artisan make:migration create_nomeTabellaSingolare_nomeAltraTabellaSingolare_table
+
