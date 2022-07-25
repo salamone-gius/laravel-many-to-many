@@ -36,6 +36,20 @@
                         <div class="alert alert-danger">{{$message}}</div>
                     @enderror
                 </div>
+                {{-- aggiungo la possibilità all'utente di modificare un tag ad un post --}}
+                <div class="form-group">
+                    <p>Tags</p>
+                    @foreach ($tags as $tag)
+                    <div class="form-check form-check-inline">
+                        {{-- in caso di checbox multiple devo stare attento al name del tag input (come array) --}}
+                        <input class="form-check-input @error('tags') is-invalid @enderror" type="checkbox" id="{{$tag->slug}}" value="{{$tag->id}}" name="tags[]" {{in_array($tag->id, old('tags', $postTags)) ? 'checked' : ''}}>
+                        <label class="form-check-label" for="{{$tag->slug}}">{{$tag->name}}</label>
+                    </div>
+                    @error('tags')
+                    <div class="alert alert-danger">{{$message}}</div>
+                    @enderror
+                    @endforeach
+                </div>
                 <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input @error('published') is-invalid @enderror" id="published" name="published" {{old('published', $post->published) ? 'checked' : ''}}>
                     <label class="form-check-label" for="published">Post</label>

@@ -125,8 +125,15 @@ class PostController extends Controller
         // importo tutte le categorie
         $categories = Category::all();
 
-        // restituisco la view di modifica del post, il singolo post (da modificare) e tutte le categorie
-        return view('admin.posts.edit', compact('post', 'categories'));
+        // importo tutti tag
+        $tags = Tag::all();
+
+        $postTags = $post->tags->map(function ($item) {
+            return $item->id;
+        })->toArray();
+
+        // restituisco la view di modifica del post, il singolo post (da modificare), tutte le categorie, tutti i tag e tutti gli id dei tag
+        return view('admin.posts.edit', compact('post', 'categories', 'tags', 'postTags'));
     }
 
     /**
@@ -147,6 +154,7 @@ class PostController extends Controller
             'content' => 'required|string|max:65535',
             'published' => 'sometimes|accepted',
             'category_id' => 'nullable|exists:categories,id',
+            'tag_id' => 'nullable|exists:tags,id',
         ]);
 
         // prendo i dati dalla request
@@ -172,6 +180,12 @@ class PostController extends Controller
         // salvo le modifiche al post a db passandogli quello che mi arriva dal form
         // $post->update($data);
         // in questo caso specifico non posso usare il metodo update perchè mi va in conflitto con la logica che gestisce lo slug
+
+        // $tags = se esiste $data['tags'], allora $tags è uguale a $data['tags'], altrimenti $tags è uguale ad array vuoto
+        $tags = isset($data['tags']) ? $data['tags'] : [];
+
+        // 
+        $post->tags()->sync($tags);
 
         // reindirizzo alla rotta che mi restituisce la view del post appena modificato passandolgi l'id del post
         return redirect()->route('admin.posts.show', $post->id);
