@@ -18,6 +18,16 @@
         <div class="card-body">
             <div>{{$post->content}}</div>
         </div>
+        @if (count($post->tags) > 0)
+        <div class="card-footer">
+            <h5>Tags:</h5>
+            <ul>
+                @foreach ($post->tags as $tag)
+                <li>{{$tag->name}}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
     </div>
     <div class="d-flex justify-content-center align-items-center m-4">
         <a href="{{route('admin.posts.index')}}" class="btn btn-secondary">Return to all posts</a>

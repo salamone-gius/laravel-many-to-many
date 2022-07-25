@@ -113,4 +113,19 @@
 		}
 	}
 
+6. aggiungo una checkbox al create.blade dei post dove permetterò all'utente di aggiungere un tag al nuovo post:
+
+    - in app > Http > Controllers > Admin > PostController:
+
+        - importo il model Tag;
+
+        - dentro al metodo create() importo tutti i tag e li inietto nella view che mi restituirà.
+
+    - in create.blade (dei post), all'interno del form, aggiungo una checkbox con i tag da associare ad ogni nuovo post;
+
+    - in app > Http > Controllers > Admin > PostController nel metodo store() aggiungo la validazione relativa a questo nuovo campo della tabella posts;
+
+    - in create.blade aggiungo la stampa dell'errore in caso di validazione fallita;
+
+    - aggiungo la gestione degli old all'interno del tag input.
 

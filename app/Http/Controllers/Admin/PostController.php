@@ -14,6 +14,10 @@ use App\Post;
 // collegate le due tabelle, importo anche il modello delle categorie
 use App\Category;
 
+// collegate le due tabelle, importo anche il modello dei tag
+use App\Tag;
+
+
 class PostController extends Controller
 {
     /**
@@ -40,8 +44,12 @@ class PostController extends Controller
         // importo tutte le categorie
         $categories = Category::all();
 
-        // restituisco la view del create e le categorie compattate
-        return view('admin.posts.create', compact('categories'));
+        // importo tutti tag
+        $tags = Tag::all();
+
+
+        // restituisco la view del create, le categorie compattate e i tag compattati
+        return view('admin.posts.create', compact('categories', 'tags'));
     }
 
     /**
@@ -59,6 +67,7 @@ class PostController extends Controller
             'content' => 'required|string|max:65535',
             'published' => 'sometimes|accepted',
             'category_id' => 'nullable|exists:categories,id',
+            'tag_id' => 'nullable|exists:tags,id',
         ]);
 
         // prendo i dati dalla request
@@ -79,6 +88,11 @@ class PostController extends Controller
 
         // salvo i dati a db
         $newPost->save();
+
+        // se ci sono dei tag associati, li associo al post appena creato
+        if (isset($data['tags'])) {
+            $newPost->tags()->sync($data['tags']); 
+        }
 
         // reindirizzo alla rotta che mi restituisce la view del post appena creato 
         return redirect()->route('admin.posts.show', $newPost->id);
