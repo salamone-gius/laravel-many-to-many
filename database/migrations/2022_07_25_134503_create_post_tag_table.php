@@ -15,6 +15,13 @@ class CreatePostTagTable extends Migration
     {
         Schema::create('post_tag', function (Blueprint $table) {
             $table->id();
+
+            // imposto la colonna post_id come foreignId per la tabella 'posts'. Dentro il metodo ondelete() metto l'azione da fare alla cancellazione di un tag (cascade cancella l'associazione tra post e tags)
+            $table->foreignId('post_id')->constrained()->onDelete('cascade');
+
+            // imposto la colonna tag_id come foreignId per la tabella 'tags'. Dentro il metodo ondelete() metto l'azione da fare alla cancellazione di un tag (cascade cancella l'associazione tra post e tags)
+            $table->foreignId('tag_id')->constrained()->onDelete('cascade');
+
             $table->timestamps();
         });
     }

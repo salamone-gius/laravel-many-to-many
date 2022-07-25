@@ -84,5 +84,21 @@
 1. nelle relazioni many to many le tabelle comunicano tra di loro attraverso una tabella pivot intermedia che conterrà le chiavi primarie (id dei record delle due tabelle) di entrambe le tabelle implicate e le userà per creare una relazione tra ogni elemento di una tabella e ogni altro elemento di un'altra tabella
 
 2. creo una migration per impostare la creazione della tabella pivot che prenderà le chiavi primarie (id dei record) di entrambe le tabelle da relazionare:
-	php artisan make:migration create_nomeTabellaSingolare_nomeAltraTabellaSingolare_table
+	php artisan make:migration create_nome_tabella_singolare_nome_altra_tabella_singolare_table
 
+3. in database > migrations > data_odierna_create_nome_tabella_singolare_nome_altra_tabella_singolare_table.php inizializzo le colonne della tabella e indico il tipo di dato con cui le andrò a popolare. Trattandosi di una tabella pivot, imposto le foreign keys di entrambe tabelle attraverso gli id:
+
+    public function up()
+    {
+        Schema::create('nome_tabella_singolare_nome_altra_tabella_singolare', function (Blueprint $table) {
+
+            // imposto la colonna nome_tabella_singolare_id come foreignId per la tabella 'nome_tabella_singolare'
+            $table->foreignId('nome_tabella_singolare_id')->constrained();
+
+            // imposto la colonna nome_altra_tabella_singolare_id come foreignId per la tabella 'nome_altra_tabella_singolare'
+            $table->foreignId('nome_altra_tabella_singolare_id')->constrained();
+        });
+    }
+
+4. lancio la migration che creerà la tabella pivot appena impostata:
+    php artisan migrate
