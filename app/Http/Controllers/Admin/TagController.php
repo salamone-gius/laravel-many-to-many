@@ -104,10 +104,16 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+
+
+    
+    // passo il singolo tag come argomento del metodo edit() (dependency injection)
+    public function edit(Tag $tag)
     {
-        //
+        // restituisco la view della nuova edit.blade e la versione compatta del singolo tag
+        return view('admin.tags.edit', compact('tag'));
     }
+
 
     /**
      * Update the specified resource in storage.
@@ -116,9 +122,33 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+
+
+    
+    // oltre ai dati submittati nel form (Request $request (di default)), passo al metodo update() come secondo argomento il singolo tag (dependency injection)
+    public function update(Request $request, Tag $tag)
     {
-        //
+        // 1. VALIDAZIONE
+        // passo al metodo validate() un array associativo in cui la chiave sarà il dato che devo controllare e come valore le caratteristiche che quel dato deve avere per poter "passare" la validazione
+        $request->validate(
+            [
+                // 'colonna' => 'tutte le proprietà che il dato in ingresso deve avere' (doc: validation rules)
+                'name' => "required|string|max:100|unique:tags,name,{$tag->id}",
+            ]
+        );
+
+        // 2. AGGIORNAMENTO DEL SINGOLO TAG
+        // passo tutti i dati in arrivo dal form ($request) dentro la variabile $data
+        $data = $request->all();
+        // imposto le colonne ed i relativi dati in arrivo con cui le andrò a riempire
+        $tag->name = $data['name'];
+        $tag->slug = Str::of($data['name'])->slug('-');
+        // salvo i dati a db in maniera permanente
+        $tag->save();
+
+        // 3. REINDIRIZZAMENTO AD UNA VIEW
+        // reindirizzo alla rotta che restituisce la view dell'elenco di tutti tag
+        return redirect()->route('admin.tags.index');
     }
 
     /**
