@@ -157,8 +157,16 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+
+
+    
+    // passo il model e il singolo tag come argomento del metodo destroy (dependancy injection)
+    public function destroy(Tag $tag)
     {
-        //
+        // cancello il singolo tag attraverso il metodo delete()
+        $tag->delete();
+
+        // reindirizzo all'index aggiornato
+        return redirect()->route('admin.tags.index');
     }
 }
