@@ -53,6 +53,10 @@ Route::middleware('auth')
     // aggiungo la rotta per il CategoryController. Il metodo resource() nel middleware crea in automatico tutte le rotte del CategoryController utili per tutte le operazioni di CRUD (index, create, ecc...)
     Route::resource('categories', 'CategoryController');
 
+    // aggiungo la rotta per il TagController. Il metodo resource() nel middleware crea in automatico tutte le rotte del TagController utili per tutte le operazioni di CRUD (index, create, ecc...)
+    Route::resource('tags', 'TagController');
+
+
     });
 
 
