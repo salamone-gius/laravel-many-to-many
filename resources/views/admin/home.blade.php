@@ -25,6 +25,10 @@
                 <a href="{{route('admin.categories.index')}}" class="btn btn-secondary m-4">See all categories</a>
                 <a href="{{route('admin.categories.create')}}" class="btn btn-success">Create new category</a>
             </div>
+            <div class="d-flex justify-content-center align-items-center m-4">
+                <a href="{{route('admin.tags.index')}}" class="btn btn-secondary m-4">See all tags</a>
+                <a href="{{route('admin.tags.create')}}" class="btn btn-success">Create new tag</a>
+            </div>
         </div>
     </div>
 </div>
