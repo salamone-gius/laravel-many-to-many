@@ -19,9 +19,16 @@ class TagController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+
+    
     public function index()
     {
-        //
+        // passo alla pagina tutti i tag
+        $tags = Tag::all();
+
+        // restituisco la view della pagina blade index.blade con la versione compatta di tutti i tag
+        return view('admin.tags.index', compact('tags'));
     }
 
     /**
@@ -81,9 +88,14 @@ class TagController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+
+
+    
+    // passo il singolo tag come argomento del metodo show() (dependency injection)
+    public function show(Tag $tag)
     {
-        //
+        // restiruisco la view della pagina show.blade e la versione compatta del singolo tag
+        return view('admin.tags.show', compact('tag'));
     }
 
     /**
